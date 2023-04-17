@@ -109,6 +109,7 @@ module.exports = function(configuration){
     var order_id = args.order_id || cleanse(configuration.app_name,true)+'-Purchase-'+suffix;
     var cust_id = args.cust_id || 'customer-'+suffix;
     var dynamic_descriptor = args.description || args.dynamic_descriptor || 'purchase';
+    var cvd_indicator = (typeof args.cvd != "undefined");
     var purchase = {
         type: 'purchase',
         cust_id,
@@ -127,7 +128,11 @@ module.exports = function(configuration){
           msg: 'INVALID_INPUTS'
         }
       }
-      return send(purchase)
+      var extended = false;
+      if (typeof args.cvd != "undefined" && isInteger(args.cvd)){
+          extended = {cvd_indicator: 1, cvd_value: args.cvd}
+      }
+      return send(purchase, extended)
       .then(function(result){
           var fe = firstElement; //shorthand
           var code = fe(result.ResponseCode);
